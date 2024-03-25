@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: marketplace
+      POSTGRES_USER: marketplace
+      POSTGRES_DB: marketplace
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+  migrations:
+    build:
+      context: migrations
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+  marketplace:
+    build: .
+    ports:
+      - 8080:8080
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+        - backend
+  
+networks:
+  backend:
+    driver: bridge
