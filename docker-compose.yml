@@ -1,4 +1,10 @@
 services:
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+    networks:
+      - backend
   db:
     image: postgres
     restart: always
@@ -22,6 +28,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    env_file:
+      - .env.local
     networks:
       - backend
   marketplace:

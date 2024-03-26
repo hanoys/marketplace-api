@@ -14,5 +14,6 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o ./bin/app ./cmd/app/main.go
 FROM scratch
 
 COPY --from=builder /usr/src/app/bin/ .
+COPY --from=builder /usr/src/app/.env.local .
 
 CMD ["./app"]

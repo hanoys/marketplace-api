@@ -1,6 +1,6 @@
 package main
 
-import "marketplace-api/internal/app"
+import "github.com/hanoys/marketplace-api/internal/app"
 
 func main() {
 	app.Run()

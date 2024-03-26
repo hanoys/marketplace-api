@@ -9,4 +9,4 @@ FROM alpine:latest
 
 COPY --from=builder /usr/src/app .
 COPY --from=builder /go/bin/migrate .
-CMD ./migrate -path . -database $DB_URL -verbose up]
+CMD ./migrate -path . -database $DB_URL -verbose up

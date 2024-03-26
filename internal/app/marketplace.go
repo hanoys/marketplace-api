@@ -1,15 +1,74 @@
 package app
 
 import (
-	"github.com/gin-gonic/gin"
+	"context"
+	"github.com/hanoys/marketplace-api/internal/config"
+	"github.com/hanoys/marketplace-api/internal/handler"
+	"github.com/hanoys/marketplace-api/internal/repository/postgres"
+	"github.com/hanoys/marketplace-api/internal/service"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
+	"log"
+	"net/http"
+	"time"
 )
 
-func Run() {
-	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
+func createConnectionPool(ctx context.Context, uri string) (*pgxpool.Pool, error) {
+	dbpool, err := pgxpool.New(ctx, uri)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = dbpool.Ping(ctx); err != nil {
+		dbpool.Close()
+		return nil, err
+	}
+
+	return dbpool, nil
+}
+
+func newRedisClient(ctx context.Context, host string, port string) (*redis.Client, error) {
+	client := redis.NewClient(&redis.Options{
+		Addr: host + ":" + port,
 	})
-	r.Run() // listen and serve on 0.0.0.0:8080
+
+	if err := client.Ping(ctx).Err(); err != nil {
+		return nil, err
+	}
+
+	return client, nil
+}
+
+func Run() {
+	cfg, err := config.GetConfig(".env.local")
+	if err != nil {
+		log.Fatalf("load config error: %v\n", err)
+	}
+
+	//TODO:  URL -> URI
+	connPool, err := createConnectionPool(context.Background(), cfg.DB.URL)
+	if err != nil {
+		log.Fatalf("unable to establish connection with database: %v\n", err)
+	}
+
+	//redisClient, err := newRedisClient(context.Background(), cfg.Redis.Host, cfg.Redis.Port)
+	//if err != nil {
+	//	log.Fatalf("unable to establish connection with redis: %v\n", err)
+	//}
+
+	serviceRepository := postgres.NewRepositories(connPool)
+	services := service.NewServices(serviceRepository)
+	serviceHandler := handler.NewHandler(services)
+
+	server := http.Server{
+		Handler:      serviceHandler.Init(),
+		Addr:         ":8080",
+		WriteTimeout: time.Second * 15,
+		ReadTimeout:  time.Second * 15,
+	}
+
+	log.Printf("Starting server at: %v\n", server.Addr)
+	if err := server.ListenAndServe(); err != nil {
+		log.Fatalf("error while listening: %v", err)
+	}
 }
