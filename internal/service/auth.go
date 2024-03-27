@@ -16,7 +16,6 @@ func NewAuthorizationService(repositories *Repositories, tokenProvider *auth.Pro
 }
 
 // TODO: change errors
-// TODO: make token pair domain?
 func (a *AuthorizationService) LogIn(ctx context.Context, login string, password string) (*auth.TokenPair, error) {
 	user, err := a.repositories.UsersRepository.FindByLogin(ctx, login)
 	if err != nil {

@@ -9,8 +9,6 @@ import (
 	"net/http"
 )
 
-// TODO: move to config
-
 type AdvertisementService struct {
 	repositories *Repositories
 }

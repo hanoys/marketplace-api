@@ -10,12 +10,10 @@ type UsersRepository struct {
 	db *pgxpool.Pool
 }
 
-// TODO: public?
 func NewUsersRepository(db *pgxpool.Pool) *UsersRepository {
 	return &UsersRepository{db}
 }
 
-// TODO: public?
 func (r *UsersRepository) Create(ctx context.Context, login string, password string) (domain.User, error) {
 	var newUser domain.User
 	err := r.db.QueryRow(ctx,

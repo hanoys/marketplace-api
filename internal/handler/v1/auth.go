@@ -8,8 +8,6 @@ import (
 	"net/http"
 )
 
-// TODO: move handler to user.go
-
 func (h *Handler) logInUser(c *gin.Context) {
 	var logInDTO dto.LogInDTO
 
