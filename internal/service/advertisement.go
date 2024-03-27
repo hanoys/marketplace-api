@@ -6,7 +6,6 @@ import (
 	"github.com/hanoys/marketplace-api/internal/domain"
 	"image"
 	_ "image/jpeg"
-	"log"
 	"net/http"
 )
 
@@ -33,7 +32,6 @@ func checkImage(imageURL string) error {
 	}
 
 	if imgcfg.Width >= 128 && imgcfg.Height >= 128 && imgcfg.Width <= 4096 && imgcfg.Height <= 4096 {
-		log.Println("IMAGE: WIDTH:", imgcfg.Width, "HEIGHT:", imgcfg.Height)
 		return nil
 	}
 

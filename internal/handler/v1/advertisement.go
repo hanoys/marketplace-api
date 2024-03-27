@@ -9,6 +9,7 @@ import (
 	"github.com/hanoys/marketplace-api/internal/service"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 func (h *Handler) InitAdvertisementRoutes(router *gin.Engine) {
@@ -50,17 +51,40 @@ func (h *Handler) postAd(c *gin.Context) {
 	c.JSON(http.StatusOK, ad)
 }
 
-func convertParams(pageString string, sortString string, dirString string) (int, domain.SortType, domain.DirectionType, error) {
+func convertParams(pageString string, sortString string, dirString string, minString string, maxString string) (int, domain.SortType, domain.DirectionType, float64, float64, error) {
 	var page int
 	var sort domain.SortType
 	var dir domain.DirectionType
+	var minPrice, maxPrice float64
+
+	if minString == "" {
+		minPrice = 0
+	} else {
+		minPriceConverted, err := strconv.ParseFloat(minString, 64)
+		if err != nil || minPriceConverted < 0 {
+			return 0, 0, 0, 0, 0, fmt.Errorf("bad request params: min price")
+		}
+
+		minPrice = minPriceConverted
+	}
+
+	if maxString == "" {
+		maxPrice = 0
+	} else {
+		maxPriceConverted, err := strconv.ParseFloat(maxString, 64)
+		if err != nil || maxPriceConverted < 0 {
+			return 0, 0, 0, 0, 0, fmt.Errorf("bad request params: max price")
+		}
+
+		maxPrice = maxPriceConverted
+	}
 
 	if pageString == "" {
 		page = 1
 	} else {
 		pageConverted, err := strconv.Atoi(pageString)
 		if err != nil || pageConverted < 1 {
-			return 0, 0, 0, fmt.Errorf("bad request params")
+			return 0, 0, 0, 0, 0, fmt.Errorf("bad request params: page")
 		}
 
 		page = pageConverted
@@ -68,27 +92,33 @@ func convertParams(pageString string, sortString string, dirString string) (int,
 
 	if sortString == "" {
 		sort = domain.DefaultSort
-	} else if sortString == "date" {
+	} else if strings.ToLower(sortString) == "date" {
 		sort = domain.DateSort
-	} else if sortString == "price" {
+	} else if strings.ToLower(sortString) == "price" {
 		sort = domain.PriceSort
 	} else {
-		return 0, 0, 0, fmt.Errorf("bad request params")
+		return 0, 0, 0, 0, 0, fmt.Errorf("bad request params: sort")
 	}
 
-	if dirString == "" || dirString == "asc" {
+	if dirString == "" || strings.ToLower(dirString) == "asc" {
 		dir = domain.AscDir
-	} else if dirString == "desc" {
+	} else if strings.ToLower(dirString) == "desc" {
 		dir = domain.DescDir
 	} else {
-		return 0, 0, 0, fmt.Errorf("bad request params")
+		return 0, 0, 0, 0, 0, fmt.Errorf("bad request params: dir")
 	}
 
-	return page, sort, dir, nil
+	return page, sort, dir, minPrice, maxPrice, nil
 }
 
 func (h *Handler) getAd(c *gin.Context) {
-	page, sort, dir, _ := convertParams(c.Query("page"), c.Query("sort"), c.Query("dir"))
+	page, sort, dir, minPrice, maxPrice, err := convertParams(c.Query("page"), c.Query("sort"),
+		c.Query("dir"), c.Query("min"), c.Query("max"))
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Errorf("params error: %v\n", err).Error()})
+		return
+	}
 
 	userID, ok := c.Get("userID")
 	if _, assertOK := userID.(int); !ok || !assertOK {
@@ -100,9 +130,15 @@ func (h *Handler) getAd(c *gin.Context) {
 		PageNumber: page,
 		Sort:       sort,
 		Dir:        dir,
+		MinPrice:   minPrice,
+		MaxPrice:   maxPrice,
 	}
 
 	advertisements, err := h.services.AdvertisementsService.GetAdvertisements(context.TODO(), params)
+	if advertisements == nil {
+		advertisements = make([]domain.AdvertisementEntry, 0)
+	}
+
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Errorf("can't create post: %v\n", err).Error()})
 		return

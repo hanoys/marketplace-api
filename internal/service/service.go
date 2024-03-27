@@ -23,6 +23,8 @@ type AdvertisementSortParams struct {
 	PageNumber int
 	Sort       domain.SortType
 	Dir        domain.DirectionType
+	MinPrice   float64
+	MaxPrice   float64
 }
 
 type AdvertisementsService interface {
