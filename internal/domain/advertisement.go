@@ -12,6 +12,16 @@ type Advertisement struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type AdvertisementEntry struct {
+	PostedByYou bool      `json:"posted_by_you"`
+	UserLogin   string    `json:"user_login"`
+	Title       string    `json:"title"`
+	Body        string    `json:"body"`
+	ImageURL    string    `json:"image_url"`
+	Price       float64   `json:"price"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
 type SortType int
 
 const (

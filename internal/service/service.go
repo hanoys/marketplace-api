@@ -4,16 +4,15 @@ import (
 	"context"
 	"github.com/hanoys/marketplace-api/auth"
 	"github.com/hanoys/marketplace-api/internal/domain"
-	"github.com/hanoys/marketplace-api/internal/domain/dto"
 )
 
-type Users interface {
+type UsersService interface {
 	SignUp(ctx context.Context, login string, password string) (domain.User, error)
 }
 
-type Advertisements interface {
+type AdvertisementsService interface {
 	Create(ctx context.Context, userID int, title string, body string, imageURL string, price float64) (domain.Advertisement, error)
-	GetAdvertisements(ctx context.Context, userID, pageNumber int, sort domain.SortType, dir domain.DirectionType) ([]dto.AdvertisementEntryDTO, error)
+	GetAdvertisements(ctx context.Context, userID, pageNumber int, sort domain.SortType, dir domain.DirectionType) ([]domain.AdvertisementEntry, error)
 	FindAll(ctx context.Context) ([]domain.Advertisement, error)
 }
 
@@ -26,13 +25,13 @@ type Authorization interface {
 }
 
 type Services struct {
-	Users
-	Advertisements
+	UsersService
+	AdvertisementsService
 	Authorization
 }
 
-func NewServices(repositories *domain.Repositories, tokenProvider *auth.Provider) *Services {
-	return &Services{Users: NewUserService(repositories),
-		Advertisements: NewAdvertisementService(repositories),
-		Authorization:  NewAuthorizationService(repositories, tokenProvider)}
+func NewServices(repositories *Repositories, tokenProvider *auth.Provider) *Services {
+	return &Services{UsersService: NewUserService(repositories),
+		AdvertisementsService: NewAdvertisementService(repositories),
+		Authorization:         NewAuthorizationService(repositories, tokenProvider)}
 }

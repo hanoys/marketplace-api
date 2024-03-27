@@ -3,15 +3,14 @@ package service
 import (
 	"context"
 	"github.com/hanoys/marketplace-api/auth"
-	"github.com/hanoys/marketplace-api/internal/domain"
 )
 
 type AuthorizationService struct {
-	repositories  *domain.Repositories
+	repositories  *Repositories
 	tokenProvider *auth.Provider
 }
 
-func NewAuthorizationService(repositories *domain.Repositories, tokenProvider *auth.Provider) *AuthorizationService {
+func NewAuthorizationService(repositories *Repositories, tokenProvider *auth.Provider) *AuthorizationService {
 	return &AuthorizationService{repositories: repositories,
 		tokenProvider: tokenProvider}
 }
@@ -19,7 +18,7 @@ func NewAuthorizationService(repositories *domain.Repositories, tokenProvider *a
 // TODO: change errors
 // TODO: make token pair domain?
 func (a *AuthorizationService) LogIn(ctx context.Context, login string, password string) (*auth.TokenPair, error) {
-	user, err := a.repositories.Users.FindByLogin(ctx, login)
+	user, err := a.repositories.UsersRepository.FindByLogin(ctx, login)
 	if err != nil {
 		return nil, err
 	}

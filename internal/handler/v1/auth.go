@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/hanoys/marketplace-api/internal/domain/dto"
+	"github.com/hanoys/marketplace-api/internal/handler/dto"
 	"net/http"
 )
 

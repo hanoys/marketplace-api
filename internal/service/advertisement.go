@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/hanoys/marketplace-api/internal/domain"
-	"github.com/hanoys/marketplace-api/internal/domain/dto"
 	"image"
 	_ "image/jpeg"
 	"log"
@@ -14,10 +13,10 @@ import (
 // TODO: move to config
 
 type AdvertisementService struct {
-	repositories *domain.Repositories
+	repositories *Repositories
 }
 
-func NewAdvertisementService(repositories *domain.Repositories) *AdvertisementService {
+func NewAdvertisementService(repositories *Repositories) *AdvertisementService {
 	return &AdvertisementService{repositories: repositories}
 }
 
@@ -47,11 +46,11 @@ func (a *AdvertisementService) Create(ctx context.Context, userID int, title str
 		return domain.Advertisement{}, err
 	}
 
-	return a.repositories.Advertisements.Create(ctx, userID, title, body, imageURL, price)
+	return a.repositories.AdvertisementsRepository.Create(ctx, userID, title, body, imageURL, price)
 }
 
-func (a *AdvertisementService) GetAdvertisements(ctx context.Context, userID int, pageNumber int, sort domain.SortType, dir domain.DirectionType) ([]dto.AdvertisementEntryDTO, error) {
-	return a.repositories.Advertisements.GetAdvertisements(ctx, userID, pageNumber, sort, dir)
+func (a *AdvertisementService) GetAdvertisements(ctx context.Context, userID int, pageNumber int, sort domain.SortType, dir domain.DirectionType) ([]domain.AdvertisementEntry, error) {
+	return a.repositories.AdvertisementsRepository.GetAdvertisements(ctx, userID, pageNumber, sort, dir)
 }
 
 func (a *AdvertisementService) FindAll(ctx context.Context) ([]domain.Advertisement, error) {

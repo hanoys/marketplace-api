@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/hanoys/marketplace-api/internal/domain"
-	"github.com/hanoys/marketplace-api/internal/domain/dto"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -71,7 +70,7 @@ func makeQuery(pageNum int, sort domain.SortType, dir domain.DirectionType) stri
 	return queryString
 }
 
-func (r *AdvertisementRepository) GetAdvertisements(ctx context.Context, userID int, pageNum int, sort domain.SortType, dir domain.DirectionType) ([]dto.AdvertisementEntryDTO, error) {
+func (r *AdvertisementRepository) GetAdvertisements(ctx context.Context, userID int, pageNum int, sort domain.SortType, dir domain.DirectionType) ([]domain.AdvertisementEntry, error) {
 
 	rows, err := r.db.Query(ctx, makeQuery(pageNum-1, sort, dir))
 	if err != nil {
@@ -80,9 +79,9 @@ func (r *AdvertisementRepository) GetAdvertisements(ctx context.Context, userID 
 
 	defer rows.Close()
 
-	var advertisements []dto.AdvertisementEntryDTO
+	var advertisements []domain.AdvertisementEntry
 	for rows.Next() {
-		var ad dto.AdvertisementEntryDTO
+		var ad domain.AdvertisementEntry
 		var id int
 		if err = rows.Scan(
 			&ad.Title,
