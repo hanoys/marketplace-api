@@ -10,13 +10,26 @@ type UsersService interface {
 	SignUp(ctx context.Context, login string, password string) (domain.User, error)
 }
 
-type AdvertisementsService interface {
-	Create(ctx context.Context, userID int, title string, body string, imageURL string, price float64) (domain.Advertisement, error)
-	GetAdvertisements(ctx context.Context, userID, pageNumber int, sort domain.SortType, dir domain.DirectionType) ([]domain.AdvertisementEntry, error)
-	FindAll(ctx context.Context) ([]domain.Advertisement, error)
+type AdvertisementCreateParams struct {
+	UserID   int
+	Title    string
+	Body     string
+	ImageURL string
+	Price    float64
 }
 
-// TODO: make token pair to be interface
+type AdvertisementSortParams struct {
+	UserID     int
+	PageNumber int
+	Sort       domain.SortType
+	Dir        domain.DirectionType
+}
+
+type AdvertisementsService interface {
+	Create(ctx context.Context, createParams AdvertisementCreateParams) (domain.Advertisement, error)
+	GetAdvertisements(ctx context.Context, sortParams AdvertisementSortParams) ([]domain.AdvertisementEntry, error)
+}
+
 type Authorization interface {
 	LogIn(ctx context.Context, login string, password string) (*auth.TokenPair, error)
 	LogOut(ctx context.Context, tokenString string) error

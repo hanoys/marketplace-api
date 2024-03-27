@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/hanoys/marketplace-api/auth"
-	"github.com/hanoys/marketplace-api/internal/config"
+	"github.com/hanoys/marketplace-api/config"
 	"github.com/hanoys/marketplace-api/internal/handler"
 	"github.com/hanoys/marketplace-api/internal/repository/postgres"
 	"github.com/hanoys/marketplace-api/internal/service"

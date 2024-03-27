@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hanoys/marketplace-api/internal/domain"
 	"github.com/hanoys/marketplace-api/internal/handler/dto"
+	"github.com/hanoys/marketplace-api/internal/service"
 	"net/http"
 	"strconv"
 )
@@ -32,7 +33,15 @@ func (h *Handler) postAd(c *gin.Context) {
 		return
 	}
 
-	ad, err := h.services.AdvertisementsService.Create(context.TODO(), userID.(int), postAdDTO.Title, postAdDTO.Body, postAdDTO.ImageURL, postAdDTO.Price)
+	params := service.AdvertisementCreateParams{
+		UserID:   userID.(int),
+		Title:    postAdDTO.Title,
+		Body:     postAdDTO.Body,
+		ImageURL: postAdDTO.ImageURL,
+		Price:    postAdDTO.Price,
+	}
+
+	ad, err := h.services.AdvertisementsService.Create(context.TODO(), params)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Errorf("can't create post: %v\n", err).Error()})
 		return
@@ -86,7 +95,14 @@ func (h *Handler) getAd(c *gin.Context) {
 		userID = -1
 	}
 
-	advertisements, err := h.services.AdvertisementsService.GetAdvertisements(context.TODO(), userID.(int), page, sort, dir)
+	params := service.AdvertisementSortParams{
+		UserID:     userID.(int),
+		PageNumber: page,
+		Sort:       sort,
+		Dir:        dir,
+	}
+
+	advertisements, err := h.services.AdvertisementsService.GetAdvertisements(context.TODO(), params)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Errorf("can't create post: %v\n", err).Error()})
 		return

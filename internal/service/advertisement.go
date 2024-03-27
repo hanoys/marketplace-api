@@ -41,18 +41,14 @@ func checkImage(imageURL string) error {
 }
 
 // Create TODO: change errors
-func (a *AdvertisementService) Create(ctx context.Context, userID int, title string, body string, imageURL string, price float64) (domain.Advertisement, error) {
-	if err := checkImage(imageURL); err != nil {
+func (a *AdvertisementService) Create(ctx context.Context, params AdvertisementCreateParams) (domain.Advertisement, error) {
+	if err := checkImage(params.ImageURL); err != nil {
 		return domain.Advertisement{}, err
 	}
 
-	return a.repositories.AdvertisementsRepository.Create(ctx, userID, title, body, imageURL, price)
+	return a.repositories.AdvertisementsRepository.Create(ctx, params)
 }
 
-func (a *AdvertisementService) GetAdvertisements(ctx context.Context, userID int, pageNumber int, sort domain.SortType, dir domain.DirectionType) ([]domain.AdvertisementEntry, error) {
-	return a.repositories.AdvertisementsRepository.GetAdvertisements(ctx, userID, pageNumber, sort, dir)
-}
-
-func (a *AdvertisementService) FindAll(ctx context.Context) ([]domain.Advertisement, error) {
-	return nil, nil
+func (a *AdvertisementService) GetAdvertisements(ctx context.Context, params AdvertisementSortParams) ([]domain.AdvertisementEntry, error) {
+	return a.repositories.AdvertisementsRepository.GetAdvertisements(ctx, params)
 }

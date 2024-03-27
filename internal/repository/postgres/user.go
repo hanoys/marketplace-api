@@ -20,11 +20,8 @@ func (r *UsersRepository) Create(ctx context.Context, login string, password str
 	var newUser domain.User
 	err := r.db.QueryRow(ctx,
 		"INSERT INTO users(login, password) VALUES ($1, $2) RETURNING *",
-		login,
-		password).Scan(
-		&newUser.ID,
-		&newUser.Login,
-		&newUser.Password)
+		login, password).Scan(
+		&newUser.ID, &newUser.Login, &newUser.Password)
 
 	if err != nil {
 		return domain.User{}, err
@@ -36,11 +33,8 @@ func (r *UsersRepository) FindByLogin(ctx context.Context, login string) (domain
 	var user domain.User
 
 	err := r.db.QueryRow(ctx,
-		"SELECT * FROM users WHERE login = $1",
-		login).Scan(
-		&user.ID,
-		&user.Login,
-		&user.Password)
+		"SELECT * FROM users WHERE login = $1", login).Scan(
+		&user.ID, &user.Login, &user.Password)
 
 	if err != nil {
 		return domain.User{}, err

@@ -11,9 +11,8 @@ type UsersRepository interface {
 }
 
 type AdvertisementsRepository interface {
-	Create(ctx context.Context, userID int, title string, body string, imageURL string, price float64) (domain.Advertisement, error)
-	GetAdvertisements(ctx context.Context, userID int, pageNum int, sort domain.SortType, dir domain.DirectionType) ([]domain.AdvertisementEntry, error)
-	FindAll(ctx context.Context) ([]domain.Advertisement, error)
+	Create(ctx context.Context, params AdvertisementCreateParams) (domain.Advertisement, error)
+	GetAdvertisements(ctx context.Context, params AdvertisementSortParams) ([]domain.AdvertisementEntry, error)
 }
 
 type Repositories struct {

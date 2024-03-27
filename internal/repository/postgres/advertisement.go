@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/hanoys/marketplace-api/internal/domain"
+	"github.com/hanoys/marketplace-api/internal/service"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -11,28 +12,17 @@ type AdvertisementRepository struct {
 	db *pgxpool.Pool
 }
 
-// TODO: public?
 func NewAdvertisementRepository(db *pgxpool.Pool) *AdvertisementRepository {
 	return &AdvertisementRepository{db}
 }
 
-// TODO: public?
-func (r *AdvertisementRepository) Create(ctx context.Context, userID int, title string, body string, imageURL string, price float64) (domain.Advertisement, error) {
+func (r *AdvertisementRepository) Create(ctx context.Context, params service.AdvertisementCreateParams) (domain.Advertisement, error) {
 	var newAdvertisement domain.Advertisement
 	err := r.db.QueryRow(ctx,
 		"INSERT INTO advertisements(user_id, title, body, image_url, price, created_at) VALUES ($1, $2, $3, $4, $5, now()) RETURNING *",
-		userID,
-		title,
-		body,
-		imageURL,
-		price).Scan(
-		&newAdvertisement.ID,
-		&newAdvertisement.UserID,
-		&newAdvertisement.Title,
-		&newAdvertisement.Body,
-		&newAdvertisement.ImageURL,
-		&newAdvertisement.Price,
-		&newAdvertisement.CreatedAt)
+		params.UserID, params.Title, params.Body, params.ImageURL, params.Price).Scan(
+		&newAdvertisement.ID, &newAdvertisement.UserID, &newAdvertisement.Title, &newAdvertisement.Body,
+		&newAdvertisement.ImageURL, &newAdvertisement.Price, &newAdvertisement.CreatedAt)
 
 	if err != nil {
 		return domain.Advertisement{}, err
@@ -70,9 +60,9 @@ func makeQuery(pageNum int, sort domain.SortType, dir domain.DirectionType) stri
 	return queryString
 }
 
-func (r *AdvertisementRepository) GetAdvertisements(ctx context.Context, userID int, pageNum int, sort domain.SortType, dir domain.DirectionType) ([]domain.AdvertisementEntry, error) {
+func (r *AdvertisementRepository) GetAdvertisements(ctx context.Context, params service.AdvertisementSortParams) ([]domain.AdvertisementEntry, error) {
 
-	rows, err := r.db.Query(ctx, makeQuery(pageNum-1, sort, dir))
+	rows, err := r.db.Query(ctx, makeQuery(params.PageNumber-1, params.Sort, params.Dir))
 	if err != nil {
 		return nil, err
 	}
@@ -83,27 +73,16 @@ func (r *AdvertisementRepository) GetAdvertisements(ctx context.Context, userID 
 	for rows.Next() {
 		var ad domain.AdvertisementEntry
 		var id int
-		if err = rows.Scan(
-			&ad.Title,
-			&ad.Body,
-			&ad.ImageURL,
-			&ad.Price,
-			&ad.CreatedAt,
-			&id,
-			&ad.UserLogin); err != nil {
+		if err = rows.Scan(&ad.Title, &ad.Body, &ad.ImageURL, &ad.Price, &ad.CreatedAt,
+			&id, &ad.UserLogin); err != nil {
 			return nil, err
 		}
 
-		if id == userID {
+		if id == params.UserID {
 			ad.PostedByYou = true
 		}
 		advertisements = append(advertisements, ad)
 	}
 
 	return advertisements, nil
-}
-
-// TODO: public?
-func (r *AdvertisementRepository) FindAll(ctx context.Context) ([]domain.Advertisement, error) {
-	return nil, nil
 }
