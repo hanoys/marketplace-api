@@ -45,6 +45,15 @@ func createTokenProviderConfig(cfg *config.Config) *auth.ProviderConfig {
 	return auth.NewProviderConfig(cfg.JWT.AccessTokenExpTime, cfg.JWT.RefreshTokenExpTime, cfg.JWT.SecretKey)
 }
 
+func createAdvertisementServiceConfig(cfg *config.Config) *service.AdvertisementServiceConfig {
+	return &service.AdvertisementServiceConfig{
+		CheckImageIdleTimeout: cfg.App.CheckImageIdleTimeout,
+		MinImageWidth:         cfg.App.MinImageWidth,
+		MaxImageWidth:         cfg.App.MaxImageWidth,
+		MinImageHeight:        cfg.App.MinImageHeight,
+		MaxImageHeight:        cfg.App.MaxImageHeight}
+}
+
 func Run() {
 	cfg, err := config.GetConfig(".env.local")
 	if err != nil {
@@ -53,7 +62,6 @@ func Run() {
 
 	fmt.Printf("config: %v\n", cfg)
 
-	//TODO:  URL -> URI
 	connPool, err := createConnectionPool(context.Background(), cfg.DB.URL)
 	if err != nil {
 		log.Fatalf("unable to establish connection with database: %v\n", err)
@@ -66,7 +74,7 @@ func Run() {
 
 	serviceRepository := postgres.NewRepositories(connPool)
 	tokenProvider := auth.NewProvider(redisClient, createTokenProviderConfig(cfg))
-	services := service.NewServices(serviceRepository, tokenProvider)
+	services := service.NewServices(serviceRepository, tokenProvider, createAdvertisementServiceConfig(cfg))
 	serviceHandler := handler.NewHandler(services)
 
 	server := http.Server{

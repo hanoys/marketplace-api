@@ -10,12 +10,21 @@ import (
 	"time"
 )
 
-type AdvertisementService struct {
-	repositories *Repositories
+type AdvertisementServiceConfig struct {
+	CheckImageIdleTimeout int
+	MinImageWidth         int
+	MaxImageWidth         int
+	MinImageHeight        int
+	MaxImageHeight        int
 }
 
-func NewAdvertisementService(repositories *Repositories) *AdvertisementService {
-	return &AdvertisementService{repositories: repositories}
+type AdvertisementService struct {
+	repositories *Repositories
+	cfg          *AdvertisementServiceConfig
+}
+
+func NewAdvertisementService(repositories *Repositories, cfg *AdvertisementServiceConfig) *AdvertisementService {
+	return &AdvertisementService{repositories: repositories, cfg: cfg}
 }
 
 func checkImage(imageURL string) error {

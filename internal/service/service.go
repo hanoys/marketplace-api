@@ -45,8 +45,9 @@ type Services struct {
 	Authorization
 }
 
-func NewServices(repositories *Repositories, tokenProvider *auth.Provider) *Services {
-	return &Services{UsersService: NewUserService(repositories),
-		AdvertisementsService: NewAdvertisementService(repositories),
+func NewServices(repositories *Repositories, tokenProvider *auth.Provider, cfg *AdvertisementServiceConfig) *Services {
+	return &Services{
+		UsersService:          NewUserService(repositories),
+		AdvertisementsService: NewAdvertisementService(repositories, cfg),
 		Authorization:         NewAuthorizationService(repositories, tokenProvider)}
 }
