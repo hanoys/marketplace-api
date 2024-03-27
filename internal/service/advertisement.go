@@ -7,6 +7,7 @@ import (
 	"image"
 	_ "image/jpeg"
 	"net/http"
+	"time"
 )
 
 type AdvertisementService struct {
@@ -18,7 +19,12 @@ func NewAdvertisementService(repositories *Repositories) *AdvertisementService {
 }
 
 func checkImage(imageURL string) error {
-	res, err := http.Get(imageURL)
+	tr := &http.Transport{
+		IdleConnTimeout: 30 * time.Second,
+	}
+	client := &http.Client{Transport: tr}
+
+	res, err := client.Get(imageURL)
 	if err != nil {
 		return err
 	}
