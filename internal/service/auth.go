@@ -2,9 +2,8 @@ package service
 
 import (
 	"context"
-	"github.com/hanoys/marketplace-api/internal/auth"
+	"github.com/hanoys/marketplace-api/auth"
 	"github.com/hanoys/marketplace-api/internal/domain"
-	"log"
 )
 
 type AuthorizationService struct {
@@ -25,14 +24,10 @@ func (a *AuthorizationService) LogIn(ctx context.Context, login string, password
 		return nil, err
 	}
 
-	log.Println("FOUND USER:", user.ID, user.Login)
-
 	tokenPayload, err := a.tokenProvider.NewPayload(user.ID)
 	if err != nil {
 		return nil, err
 	}
-
-	log.Println("PAYLOAD:", tokenPayload.UserID)
 
 	session, err := a.tokenProvider.NewSession(ctx, tokenPayload)
 	if err != nil {

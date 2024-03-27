@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"github.com/hanoys/marketplace-api/internal/auth"
+	"github.com/hanoys/marketplace-api/auth"
 	"github.com/hanoys/marketplace-api/internal/domain"
 	"github.com/hanoys/marketplace-api/internal/domain/dto"
 )

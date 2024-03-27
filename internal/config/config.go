@@ -24,6 +24,10 @@ type Config struct {
 		Host string `config:"REDIS_HOST"`
 		Port string `config:"REDIS_PORT"`
 	}
+
+	App struct {
+		AdPerPage int64 `config:"AD_PER_PAGE"`
+	}
 }
 
 func GetConfig(configPath string) (*Config, error) {
@@ -39,6 +43,11 @@ func GetConfig(configPath string) (*Config, error) {
 	}
 
 	err = config.From(configPath).To(&conf.Redis)
+	if err != nil {
+		return nil, err
+	}
+
+	err = config.From(configPath).To(&conf.App)
 	if err != nil {
 		return nil, err
 	}
