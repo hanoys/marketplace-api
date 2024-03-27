@@ -8,7 +8,6 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
-	"github.com/hanoys/marketplace-api/internal/config"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -38,13 +37,25 @@ type JWTClaims struct {
 	jwt.RegisteredClaims
 }
 
+type ProviderConfig struct {
+	AccessTokenExpTime  int64
+	RefreshTokenExpTime int64
+	SecretKey           string
+}
+
+func NewProviderConfig(accessTime int64, refreshTime int64, secret string) *ProviderConfig {
+	return &ProviderConfig{AccessTokenExpTime: accessTime,
+		RefreshTokenExpTime: refreshTime,
+		SecretKey:           secret}
+}
+
 type Provider struct {
 	redisClient *redis.Client
-	cfg         *config.Config
+	cfg         *ProviderConfig
 }
 
 // TODO: check nil arguments
-func NewProvider(redisClient *redis.Client, cfg *config.Config) *Provider {
+func NewProvider(redisClient *redis.Client, cfg *ProviderConfig) *Provider {
 	return &Provider{redisClient: redisClient,
 		cfg: cfg}
 }
@@ -58,7 +69,7 @@ func (p *Provider) newTokenWithExpiration(ctx context.Context, payload *Payload,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(p.cfg.JWT.SecretKey))
+	tokenString, err := token.SignedString([]byte(p.cfg.SecretKey))
 	if err != nil {
 		return "", err
 	}
@@ -79,8 +90,8 @@ func (p *Provider) NewPayload(userID int) (*Payload, error) {
 }
 
 func (p *Provider) NewSession(ctx context.Context, payload *Payload) (*TokenSession, error) {
-	accessExpTime := time.Now().Add(time.Minute * time.Duration(p.cfg.JWT.AccessTokenExpTime))
-	refreshExpTime := time.Now().Add(time.Minute * time.Duration(p.cfg.JWT.RefreshTokenExpTime))
+	accessExpTime := time.Now().Add(time.Minute * time.Duration(p.cfg.AccessTokenExpTime))
+	refreshExpTime := time.Now().Add(time.Minute * time.Duration(p.cfg.RefreshTokenExpTime))
 
 	accessTokenString, err := p.newTokenWithExpiration(ctx, payload, accessExpTime)
 	if err != nil {
@@ -165,7 +176,7 @@ func (p *Provider) parseToken(tokenString string) (*JWTClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString,
 		&JWTClaims{},
 		func(token *jwt.Token) (interface{}, error) {
-			return []byte(p.cfg.JWT.SecretKey), nil
+			return []byte(p.cfg.SecretKey), nil
 		})
 
 	if err != nil {

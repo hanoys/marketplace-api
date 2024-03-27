@@ -41,6 +41,10 @@ func newRedisClient(ctx context.Context, host string, port string) (*redis.Clien
 	return client, nil
 }
 
+func createTokenProviderConfig(cfg *config.Config) *auth.ProviderConfig {
+	return auth.NewProviderConfig(cfg.JWT.AccessTokenExpTime, cfg.JWT.RefreshTokenExpTime, cfg.JWT.SecretKey)
+}
+
 func Run() {
 	cfg, err := config.GetConfig(".env.local")
 	if err != nil {
@@ -61,7 +65,7 @@ func Run() {
 	}
 
 	serviceRepository := postgres.NewRepositories(connPool)
-	tokenProvider := auth.NewProvider(redisClient, cfg)
+	tokenProvider := auth.NewProvider(redisClient, createTokenProviderConfig(cfg))
 	services := service.NewServices(serviceRepository, tokenProvider)
 	serviceHandler := handler.NewHandler(services)
 
