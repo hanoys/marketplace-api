@@ -2,6 +2,8 @@ package app
 
 import (
 	"context"
+	"fmt"
+	"github.com/hanoys/marketplace-api/internal/auth"
 	"github.com/hanoys/marketplace-api/internal/config"
 	"github.com/hanoys/marketplace-api/internal/handler"
 	"github.com/hanoys/marketplace-api/internal/repository/postgres"
@@ -45,19 +47,22 @@ func Run() {
 		log.Fatalf("load config error: %v\n", err)
 	}
 
+	fmt.Printf("config: %v\n", cfg)
+
 	//TODO:  URL -> URI
 	connPool, err := createConnectionPool(context.Background(), cfg.DB.URL)
 	if err != nil {
 		log.Fatalf("unable to establish connection with database: %v\n", err)
 	}
 
-	//redisClient, err := newRedisClient(context.Background(), cfg.Redis.Host, cfg.Redis.Port)
-	//if err != nil {
-	//	log.Fatalf("unable to establish connection with redis: %v\n", err)
-	//}
+	redisClient, err := newRedisClient(context.Background(), cfg.Redis.Host, cfg.Redis.Port)
+	if err != nil {
+		log.Fatalf("unable to establish connection with redis: %v\n", err)
+	}
 
 	serviceRepository := postgres.NewRepositories(connPool)
-	services := service.NewServices(serviceRepository)
+	tokenProvider := auth.NewProvider(redisClient, cfg)
+	services := service.NewServices(serviceRepository, tokenProvider)
 	serviceHandler := handler.NewHandler(services)
 
 	server := http.Server{
@@ -68,7 +73,7 @@ func Run() {
 	}
 
 	log.Printf("Starting server at: %v\n", server.Addr)
-	if err := server.ListenAndServe(); err != nil {
+	if err = server.ListenAndServe(); err != nil {
 		log.Fatalf("error while listening: %v", err)
 	}
 }

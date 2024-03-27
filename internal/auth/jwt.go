@@ -31,20 +31,6 @@ type TokenPair struct {
 type Payload struct {
 	SessionID uuid.UUID
 	UserID    int
-	Role      string
-}
-
-func NewPayload(userID int, role string) (*Payload, error) {
-	sessionID, err := uuid.NewRandom()
-	if err != nil {
-		return nil, err
-	}
-
-	return &Payload{
-		SessionID: sessionID,
-		UserID:    userID,
-		Role:      role,
-	}, nil
 }
 
 type JWTClaims struct {
@@ -57,6 +43,7 @@ type Provider struct {
 	cfg         *config.Config
 }
 
+// TODO: check nil arguments
 func NewProvider(redisClient *redis.Client, cfg *config.Config) *Provider {
 	return &Provider{redisClient: redisClient,
 		cfg: cfg}
@@ -77,6 +64,18 @@ func (p *Provider) newTokenWithExpiration(ctx context.Context, payload *Payload,
 	}
 
 	return tokenString, nil
+}
+
+func (p *Provider) NewPayload(userID int) (*Payload, error) {
+	sessionID, err := uuid.NewRandom()
+	if err != nil {
+		return nil, err
+	}
+
+	return &Payload{
+		SessionID: sessionID,
+		UserID:    userID,
+	}, nil
 }
 
 func (p *Provider) NewSession(ctx context.Context, payload *Payload) (*TokenSession, error) {

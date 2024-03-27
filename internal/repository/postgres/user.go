@@ -31,3 +31,20 @@ func (r *UsersRepository) Create(ctx context.Context, login string, password str
 	}
 	return newUser, nil
 }
+
+func (r *UsersRepository) FindByLogin(ctx context.Context, login string) (domain.User, error) {
+	var user domain.User
+
+	err := r.db.QueryRow(ctx,
+		"SELECT * FROM users WHERE login = $1",
+		login).Scan(
+		&user.ID,
+		&user.Login,
+		&user.Password)
+
+	if err != nil {
+		return domain.User{}, err
+	}
+
+	return user, nil
+}

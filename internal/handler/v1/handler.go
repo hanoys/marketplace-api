@@ -14,6 +14,6 @@ func NewHandler(services *service.Services) *Handler {
 }
 
 func (h *Handler) InitRoutes(router *gin.Engine) {
-	router.POST("/ad/post", h.postAd)
-	router.POST("/user", h.createUser)
+	h.InitUserRoutes(router)
+	h.InitAdvertisementRoutes(router)
 }

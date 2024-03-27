@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"github.com/hanoys/marketplace-api/internal/domain"
 )
 
@@ -13,6 +14,17 @@ func NewUserService(repositories *domain.Repositories) *UserService {
 	return &UserService{repositories: repositories}
 }
 
-func (u *UserService) Create(ctx context.Context, login string, password string) (domain.User, error) {
-	return u.repositories.Users.Create(ctx, login, password)
+func (a *UserService) SignUp(ctx context.Context, login string, password string) (domain.User, error) {
+	_, err := a.repositories.Users.FindByLogin(ctx, login)
+	// TODO: to distinguish an error about not found user and db error
+	if err == nil {
+		return domain.User{}, fmt.Errorf("user already exists")
+	}
+
+	user, err := a.repositories.Users.Create(ctx, login, password)
+	if err != nil {
+		return domain.User{}, err
+	}
+
+	return user, nil
 }
