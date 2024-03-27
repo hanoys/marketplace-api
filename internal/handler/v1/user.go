@@ -38,3 +38,52 @@ func (h *Handler) signUpUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, user)
 }
+
+func (h *Handler) logInUser(c *gin.Context) {
+	var logInDTO dto.LogInDTO
+
+	if err := c.ShouldBindJSON(&logInDTO); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "bad json format"})
+		return
+	}
+
+	tokenPair, err := h.services.Authorization.LogIn(context.TODO(), logInDTO.Login, logInDTO.Password)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, fmt.Errorf("login error: %v", err).Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, tokenPair)
+}
+
+func (h *Handler) logOutUser(c *gin.Context) {
+	token, ok := c.Request.Header["Authorization"]
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "no authorization header"})
+		return
+	}
+
+	err := h.services.Authorization.LogOut(context.TODO(), token[0])
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Errorf("logout error: %v", err).Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"msg": "successful logout"})
+}
+
+func (h *Handler) refreshToken(c *gin.Context) {
+	token, ok := c.Request.Header["Authorization"]
+	if !ok {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"msg": "no authorization header"})
+		return
+	}
+
+	tokenPair, err := h.services.Authorization.RefreshToken(context.TODO(), token[0])
+	if err != nil {
+		c.JSON(http.StatusBadRequest, fmt.Errorf("login error: %v", err).Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, tokenPair)
+}

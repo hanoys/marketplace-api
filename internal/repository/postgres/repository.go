@@ -6,6 +6,7 @@ import (
 )
 
 func NewRepositories(db *pgxpool.Pool) *service.Repositories {
-	return &service.Repositories{UsersRepository: NewUsersRepository(db),
+	return &service.Repositories{
+		UsersRepository:          NewUsersRepository(db),
 		AdvertisementsRepository: NewAdvertisementRepository(db)}
 }
