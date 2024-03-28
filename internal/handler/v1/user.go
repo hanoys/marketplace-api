@@ -48,7 +48,7 @@ func (h *Handler) logInUser(c *gin.Context) {
 
 	tokenPair, err := h.services.Authorization.LogIn(c.Request.Context(), logInDTO.Login, logInDTO.Password)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, fmt.Errorf("login error: %v", err).Error())
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Errorf("login error: %v", err).Error()})
 		return
 	}
 

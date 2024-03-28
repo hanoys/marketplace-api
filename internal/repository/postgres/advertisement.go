@@ -6,7 +6,6 @@ import (
 	"github.com/hanoys/marketplace-api/internal/domain"
 	"github.com/hanoys/marketplace-api/internal/service"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"log"
 )
 
 type AdvertisementRepository struct {
@@ -33,7 +32,6 @@ func (r *AdvertisementRepository) Create(ctx context.Context, params service.Adv
 }
 
 func formWhereClause(minPrice float64, maxPrice float64) string {
-	log.Println("minPrice:", minPrice, "maxPrice:", maxPrice)
 	if minPrice == 0 && maxPrice == 0 {
 		return ""
 	} else if minPrice == 0 && maxPrice != 0 {
