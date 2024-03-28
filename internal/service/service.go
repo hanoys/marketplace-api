@@ -25,6 +25,7 @@ type AdvertisementSortParams struct {
 	Dir        domain.DirectionType
 	MinPrice   float64
 	MaxPrice   float64
+	AdPerPage  int
 }
 
 type AdvertisementsService interface {

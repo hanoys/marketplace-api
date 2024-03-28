@@ -57,17 +57,17 @@ func makeQuery(params service.AdvertisementSortParams) string {
 	if params.Sort == domain.DateSort {
 		queryString = fmt.Sprintf("SELECT a.title, a.body, a.image_url, a.price, a.created_at, u.id, u.login "+
 			"FROM advertisements AS a JOIN users AS u ON a.user_id = u.id %s "+
-			"ORDER BY created_at %s LIMIT 2 OFFSET 2*%d",
-			whereClause, dirString, params.PageNumber-1)
+			"ORDER BY created_at %s LIMIT %d OFFSET %d*%d",
+			whereClause, dirString, params.AdPerPage, params.AdPerPage, params.PageNumber-1)
 	} else if params.Sort == domain.PriceSort {
 		queryString = fmt.Sprintf("SELECT a.title, a.body, a.image_url, a.price, a.created_at, u.id, u.login "+
 			"FROM advertisements AS a JOIN users AS u ON a.user_id = u.id %s "+
-			"ORDER BY price %s LIMIT 2 OFFSET 2*%d",
-			whereClause, dirString, params.PageNumber-1)
+			"ORDER BY price %s LIMIT %d OFFSET %d*%d",
+			whereClause, dirString, params.AdPerPage, params.AdPerPage, params.PageNumber-1)
 	} else {
 		queryString = fmt.Sprintf("SELECT a.title, a.body, a.image_url, a.price, a.created_at, u.id, u.login "+
 			"FROM advertisements AS a JOIN users AS u ON a.user_id = u.id %s "+
-			"LIMIT 2 OFFSET 2*%d", whereClause, params.PageNumber-1)
+			"LIMIT %d OFFSET %d*%d", whereClause, params.AdPerPage, params.AdPerPage, params.PageNumber-1)
 	}
 
 	return queryString

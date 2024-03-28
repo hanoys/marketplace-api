@@ -53,6 +53,7 @@ func createTokenProviderConfig(cfg *config.Config) *auth.ProviderConfig {
 
 func createAdvertisementServiceConfig(cfg *config.Config) *service.AdvertisementServiceConfig {
 	return &service.AdvertisementServiceConfig{
+		AdPerPage:             cfg.App.AdPerPage,
 		CheckImageIdleTimeout: cfg.App.CheckImageIdleTimeout,
 		MinImageWidth:         cfg.App.MinImageWidth,
 		MaxImageWidth:         cfg.App.MaxImageWidth,

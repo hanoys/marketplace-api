@@ -26,12 +26,12 @@ type Config struct {
 	}
 
 	App struct {
-		AdPerPage             int64 `config:"AD_PER_PAGE"`
-		CheckImageIdleTimeout int   `config:"CHECK_IMAGE_IDLE_TIMEOUT"`
-		MinImageWidth         int   `config:"MIN_IMAGE_WIDTH"`
-		MaxImageWidth         int   `config:"MAX_IMAGE_WIDTH"`
-		MinImageHeight        int   `config:"MIN_IMAGE_HEIGHT"`
-		MaxImageHeight        int   `config:"MAX_IMAGE_HEIGHT"`
+		AdPerPage             int `config:"AD_PER_PAGE"`
+		CheckImageIdleTimeout int `config:"CHECK_IMAGE_IDLE_TIMEOUT"`
+		MinImageWidth         int `config:"MIN_IMAGE_WIDTH"`
+		MaxImageWidth         int `config:"MAX_IMAGE_WIDTH"`
+		MinImageHeight        int `config:"MIN_IMAGE_HEIGHT"`
+		MaxImageHeight        int `config:"MAX_IMAGE_HEIGHT"`
 	}
 }
 

@@ -11,6 +11,7 @@ import (
 )
 
 type AdvertisementServiceConfig struct {
+	AdPerPage             int
 	CheckImageIdleTimeout int
 	MinImageWidth         int
 	MaxImageWidth         int
@@ -60,5 +61,6 @@ func (a *AdvertisementService) Create(ctx context.Context, params AdvertisementC
 }
 
 func (a *AdvertisementService) GetAdvertisements(ctx context.Context, params AdvertisementSortParams) ([]domain.AdvertisementEntry, error) {
+	params.AdPerPage = a.cfg.AdPerPage
 	return a.repositories.AdvertisementsRepository.GetAdvertisements(ctx, params)
 }
