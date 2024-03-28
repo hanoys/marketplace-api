@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/hanoys/marketplace-api/internal/handler/dto"
@@ -30,7 +29,7 @@ func (h *Handler) signUpUser(c *gin.Context) {
 		return
 	}
 
-	user, err := h.services.UsersService.SignUp(context.TODO(), userDTO.Login, userDTO.Password)
+	user, err := h.services.UsersService.SignUp(c.Request.Context(), userDTO.Login, userDTO.Password)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Errorf("can't create user: %v\n", err).Error()})
 		return
@@ -47,7 +46,7 @@ func (h *Handler) logInUser(c *gin.Context) {
 		return
 	}
 
-	tokenPair, err := h.services.Authorization.LogIn(context.TODO(), logInDTO.Login, logInDTO.Password)
+	tokenPair, err := h.services.Authorization.LogIn(c.Request.Context(), logInDTO.Login, logInDTO.Password)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, fmt.Errorf("login error: %v", err).Error())
 		return
@@ -63,7 +62,7 @@ func (h *Handler) logOutUser(c *gin.Context) {
 		return
 	}
 
-	err := h.services.Authorization.LogOut(context.TODO(), token[0])
+	err := h.services.Authorization.LogOut(c.Request.Context(), token[0])
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Errorf("logout error: %v", err).Error()})
 		return
@@ -79,7 +78,7 @@ func (h *Handler) refreshToken(c *gin.Context) {
 		return
 	}
 
-	tokenPair, err := h.services.Authorization.RefreshToken(context.TODO(), token[0])
+	tokenPair, err := h.services.Authorization.RefreshToken(c.Request.Context(), token[0])
 	if err != nil {
 		c.JSON(http.StatusBadRequest, fmt.Errorf("login error: %v", err).Error())
 		return

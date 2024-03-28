@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/hanoys/marketplace-api/internal/domain"
@@ -11,6 +10,22 @@ import (
 	"strconv"
 	"strings"
 )
+
+type getAdvertisementQueryParams struct {
+	pageString string
+	sortString string
+	dirString  string
+	minString  string
+	maxString  string
+}
+
+type getAdvertisementConvertedParams struct {
+	page     int
+	sort     domain.SortType
+	dir      domain.DirectionType
+	minPrice float64
+	maxPrice float64
+}
 
 func (h *Handler) InitAdvertisementRoutes(router *gin.Engine) {
 	adGroup := router.Group("/ad")
@@ -42,7 +57,7 @@ func (h *Handler) postAd(c *gin.Context) {
 		Price:    postAdDTO.Price,
 	}
 
-	ad, err := h.services.AdvertisementsService.Create(context.TODO(), params)
+	ad, err := h.services.AdvertisementsService.Create(c.Request.Context(), params)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Errorf("can't create post: %v\n", err).Error()})
 		return
@@ -51,69 +66,14 @@ func (h *Handler) postAd(c *gin.Context) {
 	c.JSON(http.StatusOK, ad)
 }
 
-func convertParams(pageString string, sortString string, dirString string, minString string, maxString string) (int, domain.SortType, domain.DirectionType, float64, float64, error) {
-	var page int
-	var sort domain.SortType
-	var dir domain.DirectionType
-	var minPrice, maxPrice float64
-
-	if minString == "" {
-		minPrice = 0
-	} else {
-		minPriceConverted, err := strconv.ParseFloat(minString, 64)
-		if err != nil || minPriceConverted < 0 {
-			return 0, 0, 0, 0, 0, fmt.Errorf("bad request params: min price")
-		}
-
-		minPrice = minPriceConverted
-	}
-
-	if maxString == "" {
-		maxPrice = 0
-	} else {
-		maxPriceConverted, err := strconv.ParseFloat(maxString, 64)
-		if err != nil || maxPriceConverted < 0 {
-			return 0, 0, 0, 0, 0, fmt.Errorf("bad request params: max price")
-		}
-
-		maxPrice = maxPriceConverted
-	}
-
-	if pageString == "" {
-		page = 1
-	} else {
-		pageConverted, err := strconv.Atoi(pageString)
-		if err != nil || pageConverted < 1 {
-			return 0, 0, 0, 0, 0, fmt.Errorf("bad request params: page")
-		}
-
-		page = pageConverted
-	}
-
-	if sortString == "" {
-		sort = domain.DefaultSort
-	} else if strings.ToLower(sortString) == "date" {
-		sort = domain.DateSort
-	} else if strings.ToLower(sortString) == "price" {
-		sort = domain.PriceSort
-	} else {
-		return 0, 0, 0, 0, 0, fmt.Errorf("bad request params: sort")
-	}
-
-	if dirString == "" || strings.ToLower(dirString) == "asc" {
-		dir = domain.AscDir
-	} else if strings.ToLower(dirString) == "desc" {
-		dir = domain.DescDir
-	} else {
-		return 0, 0, 0, 0, 0, fmt.Errorf("bad request params: dir")
-	}
-
-	return page, sort, dir, minPrice, maxPrice, nil
-}
-
 func (h *Handler) getAd(c *gin.Context) {
-	page, sort, dir, minPrice, maxPrice, err := convertParams(c.Query("page"), c.Query("sort"),
-		c.Query("dir"), c.Query("min"), c.Query("max"))
+	convertedParams, err := convertParams(getAdvertisementQueryParams{
+		pageString: c.Query("page"),
+		sortString: c.Query("sort"),
+		dirString:  c.Query("dir"),
+		minString:  c.Query("min"),
+		maxString:  c.Query("max"),
+	})
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Errorf("params error: %v\n", err).Error()})
@@ -125,16 +85,16 @@ func (h *Handler) getAd(c *gin.Context) {
 		userID = -1
 	}
 
-	params := service.AdvertisementSortParams{
+	serviceParams := service.AdvertisementSortParams{
 		UserID:     userID.(int),
-		PageNumber: page,
-		Sort:       sort,
-		Dir:        dir,
-		MinPrice:   minPrice,
-		MaxPrice:   maxPrice,
+		PageNumber: convertedParams.page,
+		Sort:       convertedParams.sort,
+		Dir:        convertedParams.dir,
+		MinPrice:   convertedParams.minPrice,
+		MaxPrice:   convertedParams.maxPrice,
 	}
 
-	advertisements, err := h.services.AdvertisementsService.GetAdvertisements(context.TODO(), params)
+	advertisements, err := h.services.AdvertisementsService.GetAdvertisements(c.Request.Context(), serviceParams)
 	if advertisements == nil {
 		advertisements = make([]domain.AdvertisementEntry, 0)
 	}
@@ -145,4 +105,61 @@ func (h *Handler) getAd(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, advertisements)
+}
+
+func convertParams(queryParams getAdvertisementQueryParams) (getAdvertisementConvertedParams, error) {
+	var convertedParams getAdvertisementConvertedParams
+
+	if queryParams.minString == "" {
+		convertedParams.minPrice = 0
+	} else {
+		minPriceConverted, err := strconv.ParseFloat(queryParams.minString, 64)
+		if err != nil || minPriceConverted < 0 {
+			return getAdvertisementConvertedParams{}, fmt.Errorf("bad request params: min price")
+		}
+
+		convertedParams.minPrice = minPriceConverted
+	}
+
+	if queryParams.maxString == "" {
+		convertedParams.maxPrice = 0
+	} else {
+		maxPriceConverted, err := strconv.ParseFloat(queryParams.maxString, 64)
+		if err != nil || maxPriceConverted < 0 {
+			return getAdvertisementConvertedParams{}, fmt.Errorf("bad request params: max price")
+		}
+
+		convertedParams.maxPrice = maxPriceConverted
+	}
+
+	if queryParams.pageString == "" {
+		convertedParams.page = 1
+	} else {
+		pageConverted, err := strconv.Atoi(queryParams.pageString)
+		if err != nil || pageConverted < 1 {
+			return getAdvertisementConvertedParams{}, fmt.Errorf("bad request params: page")
+		}
+
+		convertedParams.page = pageConverted
+	}
+
+	if queryParams.sortString == "" {
+		convertedParams.sort = domain.DefaultSort
+	} else if strings.ToLower(queryParams.sortString) == "date" {
+		convertedParams.sort = domain.DateSort
+	} else if strings.ToLower(queryParams.sortString) == "price" {
+		convertedParams.sort = domain.PriceSort
+	} else {
+		return getAdvertisementConvertedParams{}, fmt.Errorf("bad request params: sort")
+	}
+
+	if queryParams.dirString == "" || strings.ToLower(queryParams.dirString) == "asc" {
+		convertedParams.dir = domain.AscDir
+	} else if strings.ToLower(queryParams.dirString) == "desc" {
+		convertedParams.dir = domain.DescDir
+	} else {
+		return getAdvertisementConvertedParams{}, fmt.Errorf("bad request params: dir")
+	}
+
+	return convertedParams, nil
 }

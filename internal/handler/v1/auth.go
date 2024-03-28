@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"context"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -9,13 +8,13 @@ import (
 func (h *Handler) verifyToken(c *gin.Context) {
 	token, ok := c.Request.Header["Authorization"]
 	if !ok {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"msg": "no authorization header"})
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg": "no authorization header"})
 		return
 	}
 
-	userID, err := h.services.Authorization.VerifyToken(context.TODO(), token[0])
+	userID, err := h.services.Authorization.VerifyToken(c.Request.Context(), token[0])
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"msg": "incorrect token"})
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg": "incorrect token"})
 		return
 	}
 
@@ -28,7 +27,7 @@ func (h *Handler) tryVerifyToken(c *gin.Context) {
 		return
 	}
 
-	userID, err := h.services.Authorization.VerifyToken(context.TODO(), token[0])
+	userID, err := h.services.Authorization.VerifyToken(c.Request.Context(), token[0])
 	if err != nil {
 		return
 	}

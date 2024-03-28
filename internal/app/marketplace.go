@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/hanoys/marketplace-api/auth"
 	"github.com/hanoys/marketplace-api/config"
@@ -15,8 +16,13 @@ import (
 	"time"
 )
 
-func createConnectionPool(ctx context.Context, uri string) (*pgxpool.Pool, error) {
-	dbpool, err := pgxpool.New(ctx, uri)
+func formConnectionURL(cfg *config.Config) string {
+	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		cfg.DB.User, cfg.DB.Password, cfg.DB.Host, cfg.DB.Port, cfg.DB.Name)
+}
+
+func createConnectionPool(ctx context.Context, cfg *config.Config) (*pgxpool.Pool, error) {
+	dbpool, err := pgxpool.New(ctx, formConnectionURL(cfg))
 	if err != nil {
 		return nil, err
 	}
@@ -29,9 +35,9 @@ func createConnectionPool(ctx context.Context, uri string) (*pgxpool.Pool, error
 	return dbpool, nil
 }
 
-func newRedisClient(ctx context.Context, host string, port string) (*redis.Client, error) {
+func newRedisClient(ctx context.Context, cfg *config.Config) (*redis.Client, error) {
 	client := redis.NewClient(&redis.Options{
-		Addr: host + ":" + port,
+		Addr: cfg.Redis.Host + ":" + cfg.Redis.Port,
 	})
 
 	if err := client.Ping(ctx).Err(); err != nil {
@@ -51,7 +57,18 @@ func createAdvertisementServiceConfig(cfg *config.Config) *service.Advertisement
 		MinImageWidth:         cfg.App.MinImageWidth,
 		MaxImageWidth:         cfg.App.MaxImageWidth,
 		MinImageHeight:        cfg.App.MinImageHeight,
-		MaxImageHeight:        cfg.App.MaxImageHeight}
+		MaxImageHeight:        cfg.App.MaxImageHeight,
+	}
+}
+
+func printConfig(cfg *config.Config) error {
+	jsonConfig, err := json.MarshalIndent(cfg, "", "    ")
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Config: \n%s\n", jsonConfig)
+	return nil
 }
 
 func Run() {
@@ -60,14 +77,14 @@ func Run() {
 		log.Fatalf("load config error: %v\n", err)
 	}
 
-	fmt.Printf("config: %v\n", cfg)
+	printConfig(cfg)
 
-	connPool, err := createConnectionPool(context.Background(), cfg.DB.URL)
+	connPool, err := createConnectionPool(context.Background(), cfg)
 	if err != nil {
 		log.Fatalf("unable to establish connection with database: %v\n", err)
 	}
 
-	redisClient, err := newRedisClient(context.Background(), cfg.Redis.Host, cfg.Redis.Port)
+	redisClient, err := newRedisClient(context.Background(), cfg)
 	if err != nil {
 		log.Fatalf("unable to establish connection with redis: %v\n", err)
 	}
