@@ -36,7 +36,7 @@ DB_PORT=5432                   # Порт базы данных
 DB_NAME=marketplace            # Название базы данных
 JWT_ACCESS_EXPIRATION_TIME=10  # Время действия access токена
 JWT_REFRESH_EXPIRATION_TIME=60 # Время действия refresh токена
-JWT_SECRET=jwt-secret 
+JWT_SECRET=jwt-secret          # Строка для подписи токена
 REDIS_HOST=redis               # Имя хоста redis
 REDIS_PORT=6379                # Порт redis
 AD_PER_PAGE=2                  # Количество объявлений на одной странице
@@ -113,7 +113,7 @@ curl --location 'localhost:8080/user/login' \
 Запрос:
 
 ```
-curl --location --request POST '185.25.51.102:8080/user/logout' \
+curl --location --request POST 'localhost:8080/user/logout' \
 --header 'Authorization: <access_token>'
 ```
 
