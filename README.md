@@ -180,7 +180,7 @@ curl --location 'localhost:8080/ad' \
 ---
 
 ### GET /ad?page={num}&sort={date,price}&dir={asc, desc}&min={num}&max={num}
-Отображение ленты объвлений.
+Отображение ленты объявлений.
 
 Для сортировки используется параметр запроса sort:
 - sort=date - сортировка по дате;
@@ -227,6 +227,23 @@ curl --location 'localhost:8080/ad?sort=price&dir=desc' \
 ]
 ```
 
+Еще примеры запросов:
+```
+curl --location 'localhost:8080/ad?page=2' \
+--header 'Authorization: <access_token>'
+```
+```
+curl --location 'localhost:8080/ad?page=2&sort=date' \
+--header 'Authorization: <access_token>'
+```
+```
+curl --location 'localhost:8080/ad?sort=price&min=10&max=50' \
+--header 'Authorization: <access_token>'
+```
+```
+curl --location 'localhost:8080/ad?max=50' \
+--header 'Authorization: <access_token>'
+```
 ## Реализация
 
 - В качестве базы данных используется PostgreSQL;
