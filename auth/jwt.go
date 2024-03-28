@@ -54,7 +54,6 @@ type Provider struct {
 	cfg         *ProviderConfig
 }
 
-// TODO: check nil arguments
 func NewProvider(redisClient *redis.Client, cfg *ProviderConfig) *Provider {
 	return &Provider{redisClient: redisClient,
 		cfg: cfg}
@@ -133,7 +132,11 @@ func (p *Provider) RefreshSession(ctx context.Context, refreshTokenString string
 
 	p.redisClient.Del(ctx, refreshClaims.Payload.SessionID.String()).Result()
 
-	return p.NewSession(ctx, &refreshClaims.Payload)
+	payload, err := p.NewPayload(refreshClaims.UserID)
+	if err != nil {
+		return nil, err
+	}
+	return p.NewSession(ctx, payload)
 }
 
 func (p *Provider) CloseSession(ctx context.Context, tokenString string) error {

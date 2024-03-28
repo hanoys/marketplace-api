@@ -51,7 +51,6 @@ func checkImage(imageURL string) error {
 	return fmt.Errorf("image too small (width and heigth must be at least 512p and not larger than 4096p)")
 }
 
-// Create TODO: change errors
 func (a *AdvertisementService) Create(ctx context.Context, params AdvertisementCreateParams) (domain.Advertisement, error) {
 	if err := checkImage(params.ImageURL); err != nil {
 		return domain.Advertisement{}, err
